@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>素材檢查｜奇幻積木樂園</title>
+  <style>
+    :root { --ok: #2f8a57; --warn: #c07a1c; --bad: #c4473f; --line: #e2e7d9; }
+    body { margin: 0; padding: 24px 16px 60px; background: #f8f5ec; color: #233e31; font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    main { max-width: 1100px; margin: auto; }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    p.lead { margin: 0 0 20px; color: #6a776e; }
+    .summary { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .summary span { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; font-size: 14px; }
+    th { background: #eef5e9; font-size: 12px; }
+    td.thumb { width: 96px; }
+    td.thumb img { max-width: 90px; max-height: 70px; display: block; background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0/12px 12px; }
+    code { font-size: 12px; background: #f3f3ee; padding: 2px 5px; border-radius: 5px; word-break: break-all; }
+    .ok { color: var(--ok); font-weight: 800; } .warn { color: var(--warn); font-weight: 800; } .bad { color: var(--bad); font-weight: 800; }
+    h2 { margin: 30px 0 10px; font-size: 18px; }
+    .wrap { overflow-x: auto; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>素材檢查</h1>
+  <p class="lead">列出 config/assets.js 裡的每一個素材，檢查檔案有沒有放進去、尺寸對不對。新圖片放進資料夾後，重新整理這一頁即可。</p>
+  <div class="summary" id="summary"></div>
+  <h2>圖片</h2>
+  <div class="wrap"><table><thead><tr><th>預覽</th><th>項目與用途</th><th>檔案位置</th><th>建議尺寸</th><th>狀態</th></tr></thead><tbody id="images"></tbody></table></div>
+  <h2>語音</h2>
+  <div class="wrap"><table><thead><tr><th>試聽</th><th>角色與內容</th><th>檔案位置</th><th>狀態</th></tr></thead><tbody id="audio"></tbody></table></div>
+</main>
+<script type="module">
+  import { ASSET_BASE, IMAGES, AUDIO, VOICE_STATUS } from '../config/assets.js';
+  const base = '../' + ASSET_BASE.replace('./', '');
+  const count = { ok: 0, missing: 0, optional: 0, size: 0 };
+
+  function probe(src) {
+    return new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  }
+
+  const rows = await Promise.all(Object.entries(IMAGES).map(async ([key, e]) => {
+    const src = base + e.file;
+    const img = await probe(src);
+    let state;
+    if (img) {
+      const actual = `${img.naturalWidth}x${img.naturalHeight}`;
+      if (actual === e.size) { state = `<span class="ok">✓ 已放入</span>`; count.ok++; }
+      else { state = `<span class="warn">⚠ 尺寸是 ${actual}</span>`; count.size++; }
+    } else if (e.status === 'optional') { state = `<span class="warn">○ 選用，尚未放入</span>`; count.optional++; }
+    else { state = `<span class="bad">✗ 缺少</span>${e.fallback ? `<br><small>目前用：${e.fallback}</small>` : ''}`; count.missing++; }
+    return `<tr><td class="thumb">${img ? `<img src="${src}" alt="">` : ''}</td>
+      <td><strong>${key}</strong>${e.source === 'user' ? '（使用者選定，不可替換）' : ''}<br>${e.purpose}</td>
+      <td><code>assets/${e.file}</code><br><small>${e.format}</small></td><td>${e.size}</td><td>${state}</td></tr>`;
+  }));
+  document.getElementById('images').innerHTML = rows.join('');
+
+  const audioRows = await Promise.all(Object.entries(AUDIO).map(async ([key, a]) => {
+    const src = base + a.file;
+    const ok = await fetch(src, { method: 'HEAD' }).then(r => r.ok).catch(() => false);
+    return `<tr><td>${ok ? `<audio controls preload="none" src="${src}"></audio>` : ''}</td>
+      <td><strong>${a.speaker}</strong>：${a.text}</td><td><code>assets/${a.file}</code></td>
+      <td>${ok ? '<span class="warn">合成聲（暫代）</span>' : '<span class="bad">✗ 缺少，改用裝置語音</span>'}</td></tr>`;
+  }));
+  document.getElementById('audio').innerHTML = audioRows.join('');
+
+  document.getElementById('summary').innerHTML =
+    `<span class="ok">已放入 ${count.ok}</span><span class="bad">缺少 ${count.missing}</span>` +
+    `<span class="warn">選用未放 ${count.optional}</span><span class="warn">尺寸不符 ${count.size}</span><span>${VOICE_STATUS}</span>`;
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ec">
+  <meta name="description" content="探索奇幻積木樂園的一座主島、四座小島與十個 3D 闖關站點。">
+  <title>奇幻積木樂園｜3D 闖關島嶼</title>
+  <link rel="stylesheet" href="./css/park.css">
+  <link rel="stylesheet" href="./css/level-one.css">
+  <script type="importmap">
+    {"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="奇幻積木樂園首頁"><span class="brand-mark">✦</span><span><strong>奇幻積木樂園</strong><small>FANTASY BLOCK PARK</small></span></a>
+      <div class="header-right"><span class="live-pill"><span></span> 探索模式</span><button class="motion-button" id="motionButton" type="button" aria-label="暫停動畫" aria-pressed="false" title="暫停動畫">Ⅱ</button><button class="sound-button" id="soundButton" type="button" aria-label="切換音效" title="切換音效">♪</button></div>
+    </header>
+
+    <main>
+      <section class="hero" aria-label="3D 積木樂園">
+        <div class="canvas-wrap" id="canvasWrap"><canvas id="world" aria-label="可旋轉的 3D 闖關島嶼"></canvas><div class="sky-glow"></div></div>
+        <div class="hero-copy"><div class="eyebrow"><span class="eyebrow-line"></span> 一起出發，收集星星！</div><h1>每一步，<br><em>都有新的驚喜。</em></h1><p>從寬闊的主島出發，沿著金黃色橋道探索四座小島。海中還有驚喜訪客！</p><div class="hero-actions"><button type="button" id="startButton" class="primary-btn">開始冒險 <span>↗</span></button><span class="drag-hint">↔ 拖曳旋轉　⊕ 滾輪縮放</span></div></div>
+        <div class="progress-card"><div class="progress-icon">★</div><div><span class="progress-label">冒險星星</span><strong id="totalStars">0 <small>/ 33</small></strong></div><div class="progress-bar"><i id="progressFill"></i></div></div>
+        <div class="orbit-note"><span class="mouse-icon">◉</span> 360° 自由探索</div>
+        <div class="bottom-gradient"></div>
+      </section>
+
+      <section class="zone-section" id="zones"><div class="section-heading"><div><div class="eyebrow dark">10 個奇幻地標</div><h2>選一站，開始闖關</h2></div><p>彩虹飲品屋有六顆星，其餘每站有三顆星等著你。</p></div><div class="zone-grid" id="zoneGrid"></div></section>
+    </main>
+
+    <div class="scene-overlay" id="sceneOverlay" aria-hidden="true"><div class="scene-backdrop" id="sceneBackdrop"></div><div class="scene-panel" role="dialog" aria-modal="true" aria-labelledby="sceneTitle"><button class="close-btn" id="closeScene" type="button" aria-label="返回島嶼">×</button><span class="scene-kicker" id="sceneKicker"></span><h2 id="sceneTitle"></h2><p id="sceneDescription"></p><div class="scene-stars" id="sceneStars" aria-label="關卡星星進度"></div><div class="mini-game"><span class="mini-label">關卡任務</span><div class="task-list" id="taskList"></div></div><div class="scene-footer"><span id="sceneFooter">完成三個任務，收集全部星星！</span><button class="back-btn" id="backButton" type="button">返回樂園地圖 ↗</button></div></div></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script type="module" src="./js/park.js"></script>
+</body>
+</html>
